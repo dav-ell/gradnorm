@@ -12,7 +12,7 @@ class GradNorm:
         3. Apply gradnorm, passing losses as input; w_i updated automatically
         4. Perform backpropagation to your model as usual
     """
-    def __init__(self, layer: nn.Module, alpha: float, number_of_tasks: int, lr: float = None, device: str = "cpu"):
+    def __init__(self, layer: nn.Module, alpha: float, number_of_tasks: int, lr: float = None, lr_warmup: float = None, device: str = "cpu"):
         """
         Initialize the GradNorm class.
         
@@ -27,6 +27,8 @@ class GradNorm:
         self.w_i = torch.nn.Parameter(torch.ones(self.T, device=self.device), requires_grad=True) # Step 1: Initialize task weights
         self.L_i_0 = None  # Placeholder for the initial losses
         self.lr = lr
+        self.lr_warmup = lr_warmup
+        self.warmup_step = 1
 
     def gradnorm(self, L_i: torch.Tensor, layer: nn.Module = None) -> torch.Tensor:
         """
@@ -74,6 +76,10 @@ class GradNorm:
         if lr is None:
             lr = self.lr
 
+            if self.lr_warmup is not None:
+                lr = lr * min(1., float(self.warmup_step) / self.lr_warmup)
+                self.warmup_step += 1
+
         assert lr is not None, "Must provide a learning rate to apply_grads."
 
         # Step 6: Differentiate L_grad with respect to task weights w_i and update
@@ -84,7 +90,7 @@ class GradNorm:
         self.w_i.data = self.w_i / torch.sum(self.w_i) * self.T
 
         if torch.any(self.w_i < 0):
-            print("Negative w_i values detected. Consider reducing the learning rate.")
+            print("Negative w_i values detected. Consider reducing the gradnorm learning rate.")
             self.w_i.data = torch.clamp(self.w_i.data, min=1e-8)
 
         return self.w_i
