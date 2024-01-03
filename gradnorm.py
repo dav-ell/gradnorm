@@ -27,7 +27,6 @@ class GradNorm:
         self.w_i = torch.nn.Parameter(torch.ones(self.T, device=self.device), requires_grad=True) # Step 1: Initialize task weights
         self.L_i_0 = None  # Placeholder for the initial losses
         self.lr = lr
-        self.opt = torch.optim.Adam([self.w_i], lr=lr)
 
     def gradnorm(self, L_i: torch.Tensor, layer: nn.Module = None) -> torch.Tensor:
         """
@@ -78,17 +77,14 @@ class GradNorm:
         assert lr is not None, "Must provide a learning rate to apply_grads."
 
         # Step 6: Differentiate L_grad with respect to task weights w_i and update
-        self.opt.zero_grad()
-        L_grad.backward()
-        self.opt.step()
-
-        # self.w_i.grad = torch.autograd.grad(L_grad, self.w_i)[0]
-        # self.w_i.data -= lr * self.w_i.grad
+        self.w_i.grad = torch.autograd.grad(L_grad, self.w_i)[0]
+        self.w_i.data -= lr * self.w_i.grad
 
         # # Step 7: Renormalize task weights w_i
-        self.w_i.data *= self.T / torch.sum(self.w_i)
+        self.w_i.data = self.w_i / torch.sum(self.w_i) * self.T
 
         if torch.any(self.w_i < 0):
             print("Negative w_i values detected. Consider reducing the learning rate.")
+            self.w_i.data = torch.clamp(self.w_i.data, min=1e-8)
 
         return self.w_i
