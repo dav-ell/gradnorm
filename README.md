@@ -21,11 +21,11 @@ This repo aims to address this, by being completely separate from the model's tr
 
 Usage is easy, just 3 lines:
 ```python
-gradnorm = GradNorm(model.last_shared_layer, alpha=0.12, number_of_tasks=T,
-                    lr=1e-3, lr_warmup=lr_warmup, device=device)
+gradnorm = GradNorm(model.last_shared_layer, alpha=0.12, number_of_tasks=10,
+                    lr=1e-3, lr_warmup=1000, device='cuda:0')
 
 # in training loop
-L_grad = gradnorm.gradnorm(task_losses, layer=trainer.model.last_shared_layer)
+L_grad = gradnorm.gradnorm(task_losses)
 gradnorm.apply_grads(L_grad)
 ```
 
