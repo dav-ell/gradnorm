@@ -53,3 +53,18 @@ for epoch in range(epochs):
 
         optimizer.step()
 ```
+
+# Performance
+
+We re-create the toy model experiment from the paper with the below results.
+
+![image](https://github.com/dav-ell/gradnorm/assets/17986781/44d25e11-84a5-423d-8e49-946988e0fd36)
+
+Where the paper results are:
+
+<img width="585" alt="image" src="https://github.com/dav-ell/gradnorm/assets/17986781/a84225f4-3d9e-4fb4-a6b9-cb639fcb8383">
+
+Experimenting with different learning rates yields slightly different curves. Adding a learning rate warmup to the toy model training yields even smoother weight adjustments.
+
+![image](https://github.com/dav-ell/gradnorm/assets/17986781/f0be12e4-0f44-4f34-b531-85ec48380236)
+
