@@ -19,8 +19,11 @@ This repo aims to address this, by being completely separate from the model's tr
 
 # Usage
 
-Usage is easy, just 2 lines:
+Usage is easy, just 3 lines:
 ```python
+gradnorm = GradNorm(model.last_shared_layer, alpha=0.12, number_of_tasks=T, lr=1e-3, lr_warmup=lr_warmup, device=device)
+
+# in training loop
 L_grad = gradnorm.gradnorm(task_losses, layer=trainer.model.last_shared_layer)
 gradnorm.apply_grads(L_grad)
 ```
